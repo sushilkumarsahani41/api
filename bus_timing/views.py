@@ -3,6 +3,7 @@ import requests
 from django.http import HttpResponse ,JsonResponse
 from urllib.parse import urlencode
 import time
+import json
 
 api_key = "AIzaSyDAgdao9v6RspQpCx0lhUxJGc9bXmFn2-o"
 base_url = 'https://maps.googleapis.com/maps/api/directions/json?'
@@ -21,27 +22,31 @@ def toCollege(request):
             'destination':'place_id:ChIJC6y1Noe5wjsRMvdwSwp4oIw',
             'mode':'transit',
             'transit_mode':'bus',
-            # 'transit_routing_preference':'less_walking',
+            'transit_routing_preference':'less_walking',
             'departure_time': l_time,
         }
         encode_param = urlencode(toCollege_Param)
         final_url = base_url + encode_param
-        print(final_url)
+        # print(final_url)
         resposne = requests.get(final_url)
-        result = resposne.json()
-        b = result['routes'][0]['legs'][0]['steps'][0]['transit_details']['line']['short_name']
-        d = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["departure_time"]["text"]
-        a = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["arrival_time"]["text"]
-        if a not in Arrival_Time:
-            Arrival_Time.append(a)
-            res = {
-                'arrival_time':a,
-                'depature_time':d,
-        '       bus':b,}
-            records.append(res)
-            n += 1
-        l_time += 900
-    return JsonResponse({'records': records})
+        if resposne.status_code == 200:
+            result = resposne.json()
+            try:
+                b = result["routes"][0]["legs"][0]["steps"][0]["transit_details"]["line"]["short_name"]
+                d = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["departure_time"]["text"]
+                a = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["arrival_time"]["text"]   
+            except Exception as e:
+               pass
+            if a not in Arrival_Time:
+                Arrival_Time.append(a)
+                res = {
+                    'arrival_time':a,
+                    'departure_time':d,
+                    'bus':b,}
+                records.append(res)
+                n += 1
+        l_time += 600
+    return JsonResponse({'records':records})
 
 
 def toHome(request):
@@ -61,19 +66,24 @@ def toHome(request):
         }
         encode_param = urlencode(toHome_Param)
         final_url = base_url + encode_param
-        print(final_url)
+        # print(final_url)
         resposne = requests.get(final_url)
-        result = resposne.json()
-        b = result['routes'][0]['legs'][0]['steps'][0]['transit_details']['line']['short_name']
-        d = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["departure_time"]["text"]
-        a = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["arrival_time"]["text"]
-        if a not in Arrival_Time:
-            Arrival_Time.append(a)
-            res = {
-                'arrival_time':a,
-                'depature_time':d,
-        '       bus':b,}
-            records.append(res)
-            n += 1
+        if resposne.status_code == 200:
+            result = resposne.json()
+            try:
+                b = result["routes"][0]["legs"][0]["steps"][0]["transit_details"]["line"]["short_name"]
+                d = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["departure_time"]["text"]
+                a = result['routes'][0]['legs'][0]['steps'][0]['transit_details']["arrival_time"]["text"]   
+            except Exception as e:
+               pass
+            if a not in Arrival_Time:
+
+                Arrival_Time.append(a)
+                res = {
+                    'arrival_time':a,
+                    'departure_time':d,
+                    'bus':b,}
+                records.append(res)
+                n += 1
         l_time += 900
-    return JsonResponse({'records': records})
+    return JsonResponse({'records':records})
